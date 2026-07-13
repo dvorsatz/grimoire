@@ -6,9 +6,6 @@
   <title>Grandmother Rowan's Grimoire</title>
   <meta name="description" content="A cottage-witch grimoire: an apothecary of herbs and tarot, a ritual loom, a self-growing book of lore, and a star almanac of calculated natal charts." />
   <meta name="color-scheme" content="dark light" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Pro:wght@300;400;600&display=swap" />
   <style>
     html, body { margin: 0; padding: 0; background: #1A100B; }
     #root { min-height: 100vh; }
@@ -328,9 +325,7 @@
       headers["anthropic-version"] = "2023-06-01";
       headers["anthropic-dangerous-direct-browser-access"] = "true";
     }
-    if (transport === "fetch-apikey" && USER_API_KEY) {
-      headers["x-api-key"] = USER_API_KEY;
-    }
+    if (transport === "fetch-apikey" && USER_API_KEY) headers["x-api-key"] = USER_API_KEY;
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers,
@@ -619,6 +614,26 @@ Ground each ritual in real eclectic tradition. Include a fire-safety note within
     }
     return saved;
   }
+  var RITUAL_KEY = "grimoire-ritual-book";
+  var BACKUP_VERSION = 1;
+  function downloadFile(filename, text, mime) {
+    try {
+      const blob = new Blob([text], { type: mime || "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1e3);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  var safeName = (s) => (s || "page").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").toLowerCase().slice(0, 60) || "page";
+  var stamp = () => (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
   var loadLearnedStore = () => kvLoad(STORE_KEY);
   var saveLearnedStore = (obj) => kvSave(STORE_KEY, obj);
   function cleanLearnedShape(parsed) {
@@ -851,6 +866,23 @@ Whole reply under 600 tokens.`;
   var Section = ({ title, children }) => /* @__PURE__ */ React.createElement("div", { style: { marginTop: 18 } }, /* @__PURE__ */ React.createElement("h3", { style: { fontFamily: FONT_DISPLAY, fontSize: 19, margin: "0 0 6px", color: C.ember, fontWeight: "normal" } }, title), children);
   var Bullets = ({ items }) => /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, paddingLeft: 20 } }, items.map((b, i) => /* @__PURE__ */ React.createElement("li", { key: i, style: { marginBottom: 5, lineHeight: 1.5 } }, b)));
   var RecipeCard = ({ r }) => /* @__PURE__ */ React.createElement("div", { style: { border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "14px 16px", background: "#fff6", marginTop: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontFamily: FONT_DISPLAY, fontSize: 17, color: C.ink } }, r.title), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.sage } }, r.type)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.inkSoft, margin: "6px 0" } }, r.ingredients.join(" \xB7 ")), /* @__PURE__ */ React.createElement("ol", { style: { margin: 0, paddingLeft: 20 } }, r.steps.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i, style: { marginBottom: 4, lineHeight: 1.45 } }, s))));
+  function PrintSheet({ doc }) {
+    if (!doc) return null;
+    const foot = /* @__PURE__ */ React.createElement("div", { className: "foot" }, "From Grandmother Rowan's Grimoire \xB7 printed ", (/* @__PURE__ */ new Date()).toLocaleDateString(), /* @__PURE__ */ React.createElement("br", null), "Lore is cross-referenced from established works on herbalism, folklore, tarot, and astrology (cited in full within the app). Offered as symbolic tradition and reflection \u2014 not medical, legal, financial, or predictive advice. Mind your flames.");
+    if (doc.kind === "entry") {
+      const e = doc.data;
+      return /* @__PURE__ */ React.createElement("div", { className: "print-sheet" }, /* @__PURE__ */ React.createElement("h1", null, e.name), /* @__PURE__ */ React.createElement("div", { className: "sub" }, (e.aka || []).join(" \xB7 ")), /* @__PURE__ */ React.createElement("div", { className: "tags" }, /* @__PURE__ */ React.createElement("strong", null, "Element:"), " ", e.element, " \xA0\xB7\xA0 ", /* @__PURE__ */ React.createElement("strong", null, "Planet:"), " ", e.planet, " \xA0\xB7\xA0 ", /* @__PURE__ */ React.createElement("strong", null, "Energy:"), " ", e.energy), /* @__PURE__ */ React.createElement("h2", null, "Whence Its Power"), /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", margin: 0 } }, e.powerSource), /* @__PURE__ */ React.createElement("h2", null, "Purpose"), /* @__PURE__ */ React.createElement("ul", null, (e.purpose || []).map((b, i) => /* @__PURE__ */ React.createElement("li", { key: i }, b))), /* @__PURE__ */ React.createElement("h2", null, "Properties & Lore"), /* @__PURE__ */ React.createElement("ul", null, (e.properties || []).map((b, i) => /* @__PURE__ */ React.createElement("li", { key: i }, b))), /* @__PURE__ */ React.createElement("h2", null, "Most Common Uses"), /* @__PURE__ */ React.createElement("ul", null, (e.commonUses || []).map((b, i) => /* @__PURE__ */ React.createElement("li", { key: i }, b))), /* @__PURE__ */ React.createElement("h2", null, "Three Workings"), (e.recipes || []).map((r, i) => /* @__PURE__ */ React.createElement("div", { className: "rite", key: i }, /* @__PURE__ */ React.createElement("h3", null, r.title, " ", /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9.5pt", color: "#666" } }, "(", r.type, ")")), /* @__PURE__ */ React.createElement("div", { className: "ing" }, (r.ingredients || []).join(" \xB7 ")), /* @__PURE__ */ React.createElement("ol", null, (r.steps || []).map((st, j) => /* @__PURE__ */ React.createElement("li", { key: j }, st))))), foot);
+    }
+    if (doc.kind === "rituals") {
+      const w = doc.data;
+      return /* @__PURE__ */ React.createElement("div", { className: "print-sheet" }, /* @__PURE__ */ React.createElement("h1", null, "Rituals for ", w.intention), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "Woven ", new Date(w.wovenAt).toLocaleDateString(), " from what the cupboard held"), /* @__PURE__ */ React.createElement("div", { className: "tags" }, /* @__PURE__ */ React.createElement("strong", null, "Materials on hand:"), " ", w.inventory), (w.rituals || []).map((r, i) => /* @__PURE__ */ React.createElement("div", { className: "rite", key: i }, /* @__PURE__ */ React.createElement("h3", null, r.name), /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#555" } }, r.intent), /* @__PURE__ */ React.createElement("div", { className: "ing" }, /* @__PURE__ */ React.createElement("strong", null, "Best woven:"), " ", r.timing, " \xA0\xB7\xA0 ", (r.materials || []).join(" \xB7 ")), /* @__PURE__ */ React.createElement("ol", null, (r.steps || []).map((st, j) => /* @__PURE__ */ React.createElement("li", { key: j }, st))), /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic" } }, r.blessing))), foot);
+    }
+    if (doc.kind === "chart") {
+      const c = doc.data;
+      return /* @__PURE__ */ React.createElement("div", { className: "print-sheet" }, /* @__PURE__ */ React.createElement("h1", null, c.birth.name ? `The Chart of ${c.birth.name}` : "A Natal Chart"), /* @__PURE__ */ React.createElement("div", { className: "sub" }, "Born ", c.birth.date, " at ", c.birth.time, " \xB7 ", c.place), /* @__PURE__ */ React.createElement("div", { className: "tags" }, /* @__PURE__ */ React.createElement("strong", null, "\u2609 Sun:"), " ", c.big3.sun.text, " \xA0\xB7\xA0 ", /* @__PURE__ */ React.createElement("strong", null, "\u263D Moon:"), " ", c.big3.moon.text, " \xA0\xB7\xA0 ", /* @__PURE__ */ React.createElement("strong", null, "\u2191 Rising:"), " ", c.big3.rising.text, /* @__PURE__ */ React.createElement("br", null), "Tropical zodiac, whole-sign houses."), /* @__PURE__ */ React.createElement("h2", null, "The Heart of the Chart"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 5pt" } }, /* @__PURE__ */ React.createElement("strong", null, "Sun."), " ", c.core.sunReading), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 5pt" } }, /* @__PURE__ */ React.createElement("strong", null, "Moon."), " ", c.core.moonReading), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 5pt" } }, /* @__PURE__ */ React.createElement("strong", null, "Rising."), " ", c.core.risingReading), /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", margin: 0 } }, c.core.synthesis), /* @__PURE__ */ React.createElement("h2", null, "The Twelve Houses"), /* @__PURE__ */ React.createElement("ul", null, (c.houses || []).map((h) => /* @__PURE__ */ React.createElement("li", { key: h.house }, /* @__PURE__ */ React.createElement("strong", null, h.house, " \xB7 ", h.sign), " \u2014 ", h.line))), /* @__PURE__ */ React.createElement("h2", null, "The Zodiac Spread"), (c.spread || []).map((card) => /* @__PURE__ */ React.createElement("div", { className: "card", key: card.house }, /* @__PURE__ */ React.createElement("strong", null, "House ", card.house, " \xB7 ", card.sign), " \u2014 ", card.card, card.reversed ? " (reversed)" : "", /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2pt" } }, card.meaning))), foot);
+    }
+    return null;
+  }
   function RowansGrimoire() {
     const { useState, useEffect } = React;
     const [tab, setTab] = useState("apothecary");
@@ -1039,6 +1071,94 @@ Whole reply under 600 tokens.`;
       await kvSave(STAR_KEY, next);
       setStarSaved(true);
     };
+    const [printDoc, setPrintDoc] = useState(null);
+    useEffect(() => {
+      if (!printDoc) return;
+      const t = setTimeout(() => {
+        try {
+          window.print();
+        } catch {
+        }
+        setTimeout(() => setPrintDoc(null), 500);
+      }, 120);
+      return () => clearTimeout(t);
+    }, [printDoc]);
+    const [ritualBook, setRitualBook] = useState({});
+    useEffect(() => {
+      (async () => {
+        const stored = await kvLoad(RITUAL_KEY);
+        if (stored && typeof stored === "object") setRitualBook(stored);
+      })();
+    }, []);
+    const [ritualSaved, setRitualSaved] = useState(false);
+    const keepWeaving = async () => {
+      if (!rituals) return;
+      const id = "weave-" + Date.now();
+      const chosenIntention = customIntention.trim() || intention;
+      const inv = [candles.join(", "), herbs.join(", "), items.join(", "), extra.trim()].filter(Boolean).join(" \xB7 ");
+      const record = { intention: chosenIntention, inventory: inv, rituals, wovenAt: (/* @__PURE__ */ new Date()).toISOString() };
+      const next = { ...ritualBook, [id]: record };
+      setRitualBook(next);
+      await kvSave(RITUAL_KEY, next);
+      setRitualSaved(true);
+    };
+    const forgetWeaving = async (id) => {
+      const next = { ...ritualBook };
+      delete next[id];
+      setRitualBook(next);
+      await kvSave(RITUAL_KEY, next);
+    };
+    const [importReport, setImportReport] = useState(null);
+    const [importError, setImportError] = useState("");
+    const backupAll = () => {
+      const payload = {
+        grimoire: "Grandmother Rowan's Grimoire",
+        version: BACKUP_VERSION,
+        exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        entries: learned,
+        rituals: ritualBook,
+        charts: almanac
+      };
+      downloadFile(`rowans-grimoire-backup-${stamp()}.json`, JSON.stringify(payload, null, 2), "application/json");
+    };
+    const restoreFrom = async (file, mode) => {
+      setImportError("");
+      setImportReport(null);
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        const inEntries = cleanLearnedShape(data.entries || data.learned || {});
+        const inRituals = {};
+        Object.keys(data.rituals || {}).forEach((k) => {
+          const r = data.rituals[k];
+          if (r && Array.isArray(r.rituals) && r.rituals.length) inRituals[k] = r;
+        });
+        const inCharts = {};
+        Object.keys(data.charts || data.almanac || {}).forEach((k) => {
+          const c = (data.charts || data.almanac)[k];
+          if (c && c.big3 && c.birth) inCharts[k] = c;
+        });
+        const found = Object.keys(inEntries).length + Object.keys(inRituals).length + Object.keys(inCharts).length;
+        if (!found) throw new Error("no pages, weavings, or charts could be read from that file");
+        const nextEntries = mode === "replace" ? inEntries : { ...learned, ...inEntries };
+        const nextRituals = mode === "replace" ? inRituals : { ...ritualBook, ...inRituals };
+        const nextCharts = mode === "replace" ? inCharts : { ...almanac, ...inCharts };
+        await persistLearned(nextEntries);
+        setRitualBook(nextRituals);
+        await kvSave(RITUAL_KEY, nextRituals);
+        setAlmanac(nextCharts);
+        await kvSave(STAR_KEY, nextCharts);
+        setImportReport({
+          entries: Object.keys(inEntries).length,
+          rituals: Object.keys(inRituals).length,
+          charts: Object.keys(inCharts).length,
+          mode,
+          names: Object.values(inEntries).map((e) => e.name).slice(0, 12)
+        });
+      } catch (e) {
+        setImportError("That scroll would not unroll: " + String(e && e.message || e));
+      }
+    };
     const removeFromAlmanac = async (id) => {
       const next = { ...almanac };
       delete next[id];
@@ -1110,6 +1230,7 @@ Whole reply under 600 tokens.`;
       try {
         const result = await askRowanForRituals(inv, chosenIntention);
         setRituals(result);
+        setRitualSaved(false);
       } catch {
         setRitualError("The threads tangled mid-weave. No matter \u2014 smooth them down and try once more.");
       }
@@ -1137,7 +1258,7 @@ Whole reply under 600 tokens.`;
       color: selected ? C.parchment : C.ink,
       transition: "all .15s ease"
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "app-pad", style: { minHeight: "100vh", background: `radial-gradient(ellipse at 50% -10%, #3a2717 0%, ${C.hearth} 45%, ${C.hearthDeep} 100%)`, fontFamily: FONT_BODY, color: C.ink, padding: "28px 14px 48px" } }, /* @__PURE__ */ React.createElement("style", null, `
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(PrintSheet, { doc: printDoc }), /* @__PURE__ */ React.createElement("div", { className: "app-pad app-shell", style: { minHeight: "100vh", background: `radial-gradient(ellipse at 50% -10%, #3a2717 0%, ${C.hearth} 45%, ${C.hearthDeep} 100%)`, fontFamily: FONT_BODY, color: C.ink, padding: "28px 14px 48px" } }, /* @__PURE__ */ React.createElement("style", null, `
         @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Crimson+Pro:wght@300;400;600&display=swap');
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         html, body { -webkit-text-size-adjust: 100%; }
@@ -1164,6 +1285,28 @@ Whole reply under 600 tokens.`;
         input:focus, textarea:focus, button:focus-visible { outline: 2px solid ${C.glow}; outline-offset: 2px; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
         .page { animation: fadeUp .5s ease both; }
+        /* \u2014\u2014\u2014 The printed page: clean black-on-white, app hidden \u2014\u2014\u2014 */
+        .print-sheet { display: none; }
+        @media print {
+          .app-shell { display: none !important; }
+          .print-sheet {
+            display: block !important;
+            background: #fff; color: #111;
+            font-family: 'Crimson Pro', Georgia, serif; font-size: 11.5pt; line-height: 1.5;
+            padding: 0; margin: 0;
+          }
+          .print-sheet h1 { font-family: 'IM Fell English', Georgia, serif; font-size: 22pt; margin: 0 0 2pt; font-weight: normal; }
+          .print-sheet h2 { font-family: 'IM Fell English', Georgia, serif; font-size: 14pt; margin: 14pt 0 4pt; font-weight: normal; border-bottom: 0.5pt solid #999; padding-bottom: 2pt; }
+          .print-sheet h3 { font-family: 'IM Fell English', Georgia, serif; font-size: 12pt; margin: 9pt 0 2pt; font-weight: normal; }
+          .print-sheet .sub { font-style: italic; color: #555; margin: 0 0 8pt; }
+          .print-sheet .tags { margin: 6pt 0 10pt; font-size: 10.5pt; color: #333; }
+          .print-sheet ul, .print-sheet ol { margin: 3pt 0 8pt; padding-left: 16pt; }
+          .print-sheet li { margin-bottom: 2pt; }
+          .print-sheet .card, .print-sheet .rite { border: 0.5pt solid #bbb; border-radius: 3pt; padding: 7pt 9pt; margin-bottom: 7pt; page-break-inside: avoid; }
+          .print-sheet .foot { margin-top: 16pt; padding-top: 6pt; border-top: 0.5pt solid #999; font-size: 8.5pt; color: #555; }
+          .print-sheet .ing { color: #444; font-size: 10.5pt; margin: 2pt 0 4pt; }
+          @page { margin: 16mm; }
+        }
         @media (max-width: 520px) {
           .app-pad { padding-left: 8px !important; padding-right: 8px !important; padding-top: 18px !important; }
           .title { font-size: 29px !important; letter-spacing: 0 !important; }
@@ -1182,7 +1325,7 @@ Whole reply under 600 tokens.`;
       },
       "\u2699 ",
       apiKeyField ? "Hearth key set" : "Set the hearth key"
-    ), showSettings && /* @__PURE__ */ React.createElement("div", { style: { maxWidth: 460, margin: "12px auto 0", textAlign: "left", background: "#00000022", border: `1px solid ${C.gold}44`, borderRadius: 6, padding: "14px 16px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.parchment, marginBottom: 4 } }, "The Hearth Key"), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 12.5, color: C.parchmentDim, margin: "0 0 8px", lineHeight: 1.5 } }, "To light the hearth on a hosted page, paste your own Anthropic API key (from console.anthropic.com). It is kept only in this browser and sent straight to Anthropic \u2014 never to any other server. The book, Loom, and Almanac all use it."), /* @__PURE__ */ React.createElement(
+    ), showSettings && /* @__PURE__ */ React.createElement("div", { style: { maxWidth: 460, margin: "12px auto 0", textAlign: "left", background: "#00000022", border: `1px solid ${C.gold}44`, borderRadius: 6, padding: "14px 16px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.parchment, marginBottom: 4 } }, "The Hearth Key"), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 12.5, color: C.parchmentDim, margin: "0 0 8px", lineHeight: 1.5 } }, "To light the hearth on a hosted page, paste your own Anthropic API key (from console.anthropic.com). It is kept only in this browser and sent straight to Anthropic \u2014 never to any other server."), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "password",
@@ -1209,7 +1352,7 @@ Whole reply under 600 tokens.`;
         style: { fontFamily: FONT_BODY, fontSize: 13, padding: "7px 14px", background: "transparent", color: C.parchmentDim, border: `1px solid ${C.gold}44`, borderRadius: 4, cursor: "pointer" }
       },
       "Forget it"
-    )))), /* @__PURE__ */ React.createElement("div", { className: "tab-row", style: { display: "flex", gap: 6, paddingLeft: 14 } }, /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "apothecary"), onClick: () => setTab("apothecary") }, "\u{1F33F} Apothecary"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "loom"), onClick: () => setTab("loom") }, "\u{1F56F} Loom"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "study"), onClick: () => setTab("study") }, "\u{1F4D6} Study"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "star"), onClick: () => setTab("star") }, "\u2726 Almanac")), /* @__PURE__ */ React.createElement("main", { className: "page-main", style: { background: `linear-gradient(180deg, ${C.parchment}, ${C.parchmentDim})`, borderRadius: "0 8px 8px 8px", padding: "26px 26px 30px", boxShadow: "0 18px 50px rgba(0,0,0,.55), inset 0 0 60px rgba(120,85,40,.14)", border: `1px solid ${C.gold}44` } }, tab === "apothecary" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "Name me a flower, herb, resin, or root \u2014 or a tarot card, zodiac sign, or wandering star \u2014 and I'll tell you its secrets: its purpose, its powers, and three workings from my own book."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "tab-row", style: { display: "flex", gap: 6, paddingLeft: 14 } }, /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "apothecary"), onClick: () => setTab("apothecary") }, "\u{1F33F} Apothecary"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "loom"), onClick: () => setTab("loom") }, "\u{1F56F} Loom"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "study"), onClick: () => setTab("study") }, "\u{1F4D6} Study"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "star"), onClick: () => setTab("star") }, "\u2726 Almanac"), /* @__PURE__ */ React.createElement("button", { className: "tab-btn", style: tabStyle(tab === "chest"), onClick: () => setTab("chest") }, "\u{1F5DD} Chest")), /* @__PURE__ */ React.createElement("main", { className: "page-main", style: { background: `linear-gradient(180deg, ${C.parchment}, ${C.parchmentDim})`, borderRadius: "0 8px 8px 8px", padding: "26px 26px 30px", boxShadow: "0 18px 50px rgba(0,0,0,.55), inset 0 0 60px rgba(120,85,40,.14)", border: `1px solid ${C.gold}44` } }, tab === "apothecary" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "Name me a flower, herb, resin, or root \u2014 or a tarot card, zodiac sign, or wandering star \u2014 and I'll tell you its secrets: its purpose, its powers, and three workings from my own book."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
         value: query,
@@ -1228,7 +1371,21 @@ Whole reply under 600 tokens.`;
         style: { fontFamily: FONT_DISPLAY, fontSize: 16, padding: "10px 22px", background: C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer", opacity: loading || researching ? 0.7 : 1 }
       },
       loading || researching ? "Consulting\u2026" : "Consult the pages"
-    )), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, fontSize: 13, color: C.inkSoft } }, "In my own book already: ", Object.values(GRIMOIRE).map((g) => g.name).join(", "), ".", Object.keys(learned).length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("span", { style: { color: C.sage } }, "Researched in the Study: ", Object.values(learned).map((g) => `${g.name} (${g._meta ? g._meta.revisions : 1}\xD7)`).join(", "), "."))), loading && /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", color: C.sage, marginTop: 18 } }, "\u2736 Turning the old pages by candlelight\u2026"), researching && tab === "apothecary" && /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", color: C.sage, marginTop: 18 } }, "\u2736 Not in the book yet \u2014 Rowan has slipped off to the Study. ", PHASES[phase]), error && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 18 } }, error), entry && !loading && /* @__PURE__ */ React.createElement("div", { className: "page", style: { marginTop: 22 } }, /* @__PURE__ */ React.createElement(Rule, null), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("h2", { className: "entry-title", style: { fontFamily: FONT_DISPLAY, fontWeight: "normal", fontSize: 32, margin: 0, color: C.ink } }, entry.name), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", color: C.sage, marginTop: 4 } }, entrySource)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 14 } }, /* @__PURE__ */ React.createElement(Tag, { label: "Element", value: entry.element }), /* @__PURE__ */ React.createElement(Tag, { label: "Planet", value: entry.planet }), /* @__PURE__ */ React.createElement(Tag, { label: "Energy", value: entry.energy })), /* @__PURE__ */ React.createElement(Section, { title: "Whence Its Power" }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", lineHeight: 1.55 } }, entry.powerSource)), /* @__PURE__ */ React.createElement(Section, { title: "Purpose" }, /* @__PURE__ */ React.createElement(Bullets, { items: entry.purpose })), /* @__PURE__ */ React.createElement(Section, { title: "Properties & Lore" }, /* @__PURE__ */ React.createElement(Bullets, { items: entry.properties })), /* @__PURE__ */ React.createElement(Section, { title: "Most Common Uses" }, /* @__PURE__ */ React.createElement(Bullets, { items: entry.commonUses })), /* @__PURE__ */ React.createElement(Section, { title: "Three Workings from the Book" }, entry.recipes.map((r, i) => /* @__PURE__ */ React.createElement(RecipeCard, { key: i, r }))))), tab === "loom" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "Tell me the intention of your working and what your cupboard holds \u2014 the loom will find the pattern between them."), /* @__PURE__ */ React.createElement(Section, { title: "The Intention \u2014 the Heart of the Working" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 } }, INTENTIONS.map((it) => /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, fontSize: 13, color: C.inkSoft } }, "In my own book already: ", Object.values(GRIMOIRE).map((g) => g.name).join(", "), ".", Object.keys(learned).length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("br", null), /* @__PURE__ */ React.createElement("span", { style: { color: C.sage } }, "Researched in the Study: ", Object.values(learned).map((g) => `${g.name} (${g._meta ? g._meta.revisions : 1}\xD7)`).join(", "), "."))), loading && /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", color: C.sage, marginTop: 18 } }, "\u2736 Turning the old pages by candlelight\u2026"), researching && tab === "apothecary" && /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", color: C.sage, marginTop: 18 } }, "\u2736 Not in the book yet \u2014 Rowan has slipped off to the Study. ", PHASES[phase]), error && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 18 } }, error), entry && !loading && /* @__PURE__ */ React.createElement("div", { className: "page", style: { marginTop: 22 } }, /* @__PURE__ */ React.createElement(Rule, null), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("h2", { className: "entry-title", style: { fontFamily: FONT_DISPLAY, fontWeight: "normal", fontSize: 32, margin: 0, color: C.ink } }, entry.name), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", color: C.sage, marginTop: 4 } }, entrySource)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 14 } }, /* @__PURE__ */ React.createElement(Tag, { label: "Element", value: entry.element }), /* @__PURE__ */ React.createElement(Tag, { label: "Planet", value: entry.planet }), /* @__PURE__ */ React.createElement(Tag, { label: "Energy", value: entry.energy })), /* @__PURE__ */ React.createElement(Section, { title: "Whence Its Power" }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", lineHeight: 1.55 } }, entry.powerSource)), /* @__PURE__ */ React.createElement(Section, { title: "Purpose" }, /* @__PURE__ */ React.createElement(Bullets, { items: entry.purpose })), /* @__PURE__ */ React.createElement(Section, { title: "Properties & Lore" }, /* @__PURE__ */ React.createElement(Bullets, { items: entry.properties })), /* @__PURE__ */ React.createElement(Section, { title: "Most Common Uses" }, /* @__PURE__ */ React.createElement(Bullets, { items: entry.commonUses })), /* @__PURE__ */ React.createElement(Section, { title: "Three Workings from the Book" }, entry.recipes.map((r, i) => /* @__PURE__ */ React.createElement(RecipeCard, { key: i, r }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setPrintDoc({ kind: "entry", data: entry }),
+        style: { fontFamily: FONT_DISPLAY, fontSize: 15, padding: "9px 20px", background: C.sage, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer" }
+      },
+      "\u21E9 Download this page (PDF)"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => downloadFile(`${safeName(entry.name)}.json`, JSON.stringify(entry, null, 2), "application/json"),
+        style: { fontFamily: FONT_BODY, fontSize: 14, padding: "9px 16px", background: "transparent", color: C.inkSoft, border: `1px solid ${C.ink}44`, borderRadius: 999, cursor: "pointer" }
+      },
+      "\u2026 or as data (JSON)"
+    )))), tab === "loom" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "Tell me the intention of your working and what your cupboard holds \u2014 the loom will find the pattern between them."), /* @__PURE__ */ React.createElement(Section, { title: "The Intention \u2014 the Heart of the Working" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 } }, INTENTIONS.map((it) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: it,
@@ -1266,7 +1423,50 @@ Whole reply under 600 tokens.`;
         style: { marginTop: 20, fontFamily: FONT_DISPLAY, fontSize: 17, padding: "11px 26px", background: C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer", opacity: ritualLoading ? 0.7 : 1 }
       },
       ritualLoading ? "Weaving\u2026" : "Weave my rituals"
-    ), ritualLoading && /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", color: C.sage, marginTop: 16 } }, "\u2736 The loom hums; the threads are finding their pattern\u2026"), ritualError && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 16 } }, ritualError), rituals && !ritualLoading && /* @__PURE__ */ React.createElement("div", { className: "page", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement(Rule, null), rituals.map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "16px 18px", background: "#fff6", marginTop: 14 } }, /* @__PURE__ */ React.createElement("h3", { style: { fontFamily: FONT_DISPLAY, fontWeight: "normal", fontSize: 22, margin: "0 0 2px", color: C.ink } }, r.name), /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: C.inkSoft, marginBottom: 8 } }, r.intent), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, letterSpacing: 1, textTransform: "uppercase", color: C.sage, marginBottom: 8 } }, "Best woven: ", r.timing), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.inkSoft, marginBottom: 8 } }, r.materials.join(" \xB7 ")), /* @__PURE__ */ React.createElement("ol", { style: { margin: 0, paddingLeft: 20 } }, r.steps.map((s, j) => /* @__PURE__ */ React.createElement("li", { key: j, style: { marginBottom: 5, lineHeight: 1.5 } }, s))), /* @__PURE__ */ React.createElement("p", { style: { margin: "10px 0 0", fontStyle: "italic", color: C.ember } }, r.blessing))))), tab === "study" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "This is where the book grows. Name an ingredient \u2014 or a tarot card, zodiac sign, or planet \u2014 and I'll research it through the old sources, Western and Vedic alike, and ink a new page. Ask again later, and I'll deepen it \u2014 knowledge, like a garden, rewards tending."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    ), ritualLoading && /* @__PURE__ */ React.createElement("p", { style: { fontStyle: "italic", color: C.sage, marginTop: 16 } }, "\u2736 The loom hums; the threads are finding their pattern\u2026"), ritualError && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 16 } }, ritualError), rituals && !ritualLoading && /* @__PURE__ */ React.createElement("div", { className: "page", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement(Rule, null), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 4 } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: keepWeaving,
+        disabled: ritualSaved,
+        style: { fontFamily: FONT_DISPLAY, fontSize: 15, padding: "9px 20px", background: ritualSaved ? C.sage : C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: ritualSaved ? "default" : "pointer" }
+      },
+      ritualSaved ? "\u2713 Kept in the ritual book" : "Keep these rituals"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setPrintDoc({ kind: "rituals", data: { intention: customIntention.trim() || intention, inventory: [candles.join(", "), herbs.join(", "), items.join(", "), extra.trim()].filter(Boolean).join(" \xB7 "), rituals, wovenAt: (/* @__PURE__ */ new Date()).toISOString() } }),
+        style: { fontFamily: FONT_DISPLAY, fontSize: 15, padding: "9px 20px", background: C.sage, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer" }
+      },
+      "\u21E9 Download (PDF)"
+    )), rituals.map((r, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "16px 18px", background: "#fff6", marginTop: 14 } }, /* @__PURE__ */ React.createElement("h3", { style: { fontFamily: FONT_DISPLAY, fontWeight: "normal", fontSize: 22, margin: "0 0 2px", color: C.ink } }, r.name), /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: C.inkSoft, marginBottom: 8 } }, r.intent), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, letterSpacing: 1, textTransform: "uppercase", color: C.sage, marginBottom: 8 } }, "Best woven: ", r.timing), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.inkSoft, marginBottom: 8 } }, r.materials.join(" \xB7 ")), /* @__PURE__ */ React.createElement("ol", { style: { margin: 0, paddingLeft: 20 } }, r.steps.map((s, j) => /* @__PURE__ */ React.createElement("li", { key: j, style: { marginBottom: 5, lineHeight: 1.5 } }, s))), /* @__PURE__ */ React.createElement("p", { style: { margin: "10px 0 0", fontStyle: "italic", color: C.ember } }, r.blessing)))), /* @__PURE__ */ React.createElement(Section, { title: "Rituals Kept in the Book" }, Object.keys(ritualBook).length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", color: C.inkSoft } }, 'Nothing kept yet. Weave something and press "Keep these rituals" to hold onto it.') : Object.keys(ritualBook).map((id) => {
+      const w = ritualBook[id];
+      return /* @__PURE__ */ React.createElement("div", { key: id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "10px 14px", background: "#fff6", marginTop: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.ink } }, w.intention), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: C.sage, marginLeft: 10 } }, (w.rituals || []).length, " rites \xB7 ", new Date(w.wovenAt).toLocaleDateString())), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            setRituals(w.rituals);
+            setRitualSaved(true);
+            setRitualError("");
+          },
+          style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.ink, border: `1px solid ${C.ink}44`, borderRadius: 999, cursor: "pointer" }
+        },
+        "Open"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => setPrintDoc({ kind: "rituals", data: w }),
+          style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.ember, border: `1px solid ${C.ember}66`, borderRadius: 999, cursor: "pointer" }
+        },
+        "\u21E9 PDF"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => forgetWeaving(id),
+          style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.inkSoft, border: `1px solid ${C.ink}33`, borderRadius: 999, cursor: "pointer" }
+        },
+        "Unravel"
+      )));
+    }))), tab === "study" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "This is where the book grows. Name an ingredient \u2014 or a tarot card, zodiac sign, or planet \u2014 and I'll research it through the old sources, Western and Vedic alike, and ink a new page. Ask again later, and I'll deepen it \u2014 knowledge, like a garden, rewards tending."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "input",
       {
         value: researchQuery,
@@ -1321,6 +1521,13 @@ Whole reply under 600 tokens.`;
           style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.ink, border: `1px solid ${C.ink}44`, borderRadius: 999, cursor: "pointer" }
         },
         "Read"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => setPrintDoc({ kind: "entry", data: e }),
+          style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.sage, border: `1px solid ${C.sage}88`, borderRadius: 999, cursor: "pointer" }
+        },
+        "\u21E9 PDF"
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1412,15 +1619,22 @@ Whole reply under 600 tokens.`;
         style: { marginTop: 16, fontFamily: FONT_DISPLAY, fontSize: 17, padding: "11px 26px", background: C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer", opacity: casting ? 0.7 : 1 }
       },
       casting ? "Casting\u2026" : "\u2726 Cast the chart"
-    ), casting && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 } }, STAR_PHASES.map((ph, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { fontStyle: "italic", color: i < starPhase ? C.inkSoft : i === starPhase ? C.ember : C.ink + "33", marginBottom: 3, transition: "color .4s" } }, i < starPhase ? "\u2713" : i === starPhase ? "\u2726" : "\xB7", " ", ph))), starError && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 14 } }, starError), starResult && !casting && /* @__PURE__ */ React.createElement("div", { className: "page", style: { marginTop: 20 } }, /* @__PURE__ */ React.createElement(Rule, null), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("h2", { className: "entry-title", style: { fontFamily: FONT_DISPLAY, fontWeight: "normal", fontSize: 28, margin: 0, color: C.ink } }, starResult.birth.name ? `The Chart of ${starResult.birth.name}` : "A Natal Chart"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.sage, marginTop: 4 } }, "Born ", starResult.birth.date, " at ", starResult.birth.time, " \xB7 ", starResult.place)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 14 } }, /* @__PURE__ */ React.createElement(Tag, { label: "\u2609 Sun", value: starResult.big3.sun.text }), /* @__PURE__ */ React.createElement(Tag, { label: "\u263D Moon", value: starResult.big3.moon.text }), /* @__PURE__ */ React.createElement(Tag, { label: "\u2191 Rising", value: starResult.big3.rising.text })), (starResult.big3.moon.nearCusp || starResult.big3.rising.nearCusp || starResult.big3.sun.nearCusp) && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 12.5, fontStyle: "italic", color: C.inkSoft, textAlign: "center", marginTop: 8 } }, "A placement sits within a degree or so of a cusp \u2014 small uncertainties in birth time can tip it. Hold both readings lightly."), /* @__PURE__ */ React.createElement(Section, { title: "The Heart of the Chart" }, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: C.ember } }, "Sun."), " ", starResult.core.sunReading), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: C.ember } }, "Moon."), " ", starResult.core.moonReading), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: C.ember } }, "Rising."), " ", starResult.core.risingReading), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", lineHeight: 1.55 } }, starResult.core.synthesis)), /* @__PURE__ */ React.createElement(Section, { title: "The Twelve Houses (Whole-Sign)" }, starResult.houses.map((h) => /* @__PURE__ */ React.createElement("div", { key: h.house, style: { display: "flex", gap: 8, marginBottom: 5, lineHeight: 1.45 } }, /* @__PURE__ */ React.createElement("span", { style: { fontFamily: FONT_DISPLAY, minWidth: 88, color: C.sage } }, h.house, " \xB7 ", h.sign), /* @__PURE__ */ React.createElement("span", null, h.line)))), /* @__PURE__ */ React.createElement(Section, { title: "The Zodiac Spread \u2014 One Card Per House" }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 10 } }, starResult.spread.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.house, style: { border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "10px 12px", background: "#fff6" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.sage } }, "House ", c.house, " \xB7 ", c.sign), /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.ink, margin: "2px 0 4px" } }, c.card, c.reversed ? " \u27F2" : ""), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13.5, lineHeight: 1.4, color: C.inkSoft } }, c.meaning)))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: C.inkSoft, marginTop: 6 } }, "\u27F2 marks a reversed card.")), /* @__PURE__ */ React.createElement(
+    ), casting && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 16 } }, STAR_PHASES.map((ph, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { fontStyle: "italic", color: i < starPhase ? C.inkSoft : i === starPhase ? C.ember : C.ink + "33", marginBottom: 3, transition: "color .4s" } }, i < starPhase ? "\u2713" : i === starPhase ? "\u2726" : "\xB7", " ", ph))), starError && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 14 } }, starError), starResult && !casting && /* @__PURE__ */ React.createElement("div", { className: "page", style: { marginTop: 20 } }, /* @__PURE__ */ React.createElement(Rule, null), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("h2", { className: "entry-title", style: { fontFamily: FONT_DISPLAY, fontWeight: "normal", fontSize: 28, margin: 0, color: C.ink } }, starResult.birth.name ? `The Chart of ${starResult.birth.name}` : "A Natal Chart"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.sage, marginTop: 4 } }, "Born ", starResult.birth.date, " at ", starResult.birth.time, " \xB7 ", starResult.place)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginTop: 14 } }, /* @__PURE__ */ React.createElement(Tag, { label: "\u2609 Sun", value: starResult.big3.sun.text }), /* @__PURE__ */ React.createElement(Tag, { label: "\u263D Moon", value: starResult.big3.moon.text }), /* @__PURE__ */ React.createElement(Tag, { label: "\u2191 Rising", value: starResult.big3.rising.text })), (starResult.big3.moon.nearCusp || starResult.big3.rising.nearCusp || starResult.big3.sun.nearCusp) && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 12.5, fontStyle: "italic", color: C.inkSoft, textAlign: "center", marginTop: 8 } }, "A placement sits within a degree or so of a cusp \u2014 small uncertainties in birth time can tip it. Hold both readings lightly."), /* @__PURE__ */ React.createElement(Section, { title: "The Heart of the Chart" }, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: C.ember } }, "Sun."), " ", starResult.core.sunReading), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: C.ember } }, "Moon."), " ", starResult.core.moonReading), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("strong", { style: { color: C.ember } }, "Rising."), " ", starResult.core.risingReading), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", lineHeight: 1.55 } }, starResult.core.synthesis)), /* @__PURE__ */ React.createElement(Section, { title: "The Twelve Houses (Whole-Sign)" }, starResult.houses.map((h) => /* @__PURE__ */ React.createElement("div", { key: h.house, style: { display: "flex", gap: 8, marginBottom: 5, lineHeight: 1.45 } }, /* @__PURE__ */ React.createElement("span", { style: { fontFamily: FONT_DISPLAY, minWidth: 88, color: C.sage } }, h.house, " \xB7 ", h.sign), /* @__PURE__ */ React.createElement("span", null, h.line)))), /* @__PURE__ */ React.createElement(Section, { title: "The Zodiac Spread \u2014 One Card Per House" }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 10 } }, starResult.spread.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.house, style: { border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "10px 12px", background: "#fff6" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: C.sage } }, "House ", c.house, " \xB7 ", c.sign), /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.ink, margin: "2px 0 4px" } }, c.card, c.reversed ? " \u27F2" : ""), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13.5, lineHeight: 1.4, color: C.inkSoft } }, c.meaning)))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: C.inkSoft, marginTop: 6 } }, "\u27F2 marks a reversed card.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 } }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: saveToAlmanac,
         disabled: starSaved,
-        style: { marginTop: 16, fontFamily: FONT_DISPLAY, fontSize: 16, padding: "10px 22px", background: starSaved ? C.sage : C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: starSaved ? "default" : "pointer" }
+        style: { fontFamily: FONT_DISPLAY, fontSize: 16, padding: "10px 22px", background: starSaved ? C.sage : C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: starSaved ? "default" : "pointer" }
       },
       starSaved ? "\u2713 Inked into the Almanac" : "Ink this chart into the Almanac"
-    )), /* @__PURE__ */ React.createElement(Section, { title: "Charts Kept in the Almanac" }, Object.keys(almanac).length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", color: C.inkSoft } }, "No charts yet. Cast one above, and the Almanac will keep it under the stars.") : Object.keys(almanac).map((id) => /* @__PURE__ */ React.createElement("div", { key: id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "10px 14px", background: "#fff6", marginTop: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.ink } }, almanac[id].label), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: C.sage, marginLeft: 10 } }, "\u2609 ", almanac[id].big3.sun.sign, " \xB7 \u263D ", almanac[id].big3.moon.sign, " \xB7 \u2191 ", almanac[id].big3.rising.sign)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setPrintDoc({ kind: "chart", data: starResult }),
+        style: { fontFamily: FONT_DISPLAY, fontSize: 16, padding: "10px 22px", background: C.sage, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer" }
+      },
+      "\u21E9 Download chart (PDF)"
+    ))), /* @__PURE__ */ React.createElement(Section, { title: "Charts Kept in the Almanac" }, Object.keys(almanac).length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic", color: C.inkSoft } }, "No charts yet. Cast one above, and the Almanac will keep it under the stars.") : Object.keys(almanac).map((id) => /* @__PURE__ */ React.createElement("div", { key: id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", border: `1px solid ${C.ink}33`, borderRadius: 4, padding: "10px 14px", background: "#fff6", marginTop: 8 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: { fontFamily: FONT_DISPLAY, fontSize: 16, color: C.ink } }, almanac[id].label), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: C.sage, marginLeft: 10 } }, "\u2609 ", almanac[id].big3.sun.sign, " \xB7 \u263D ", almanac[id].big3.moon.sign, " \xB7 \u2191 ", almanac[id].big3.rising.sign)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -1434,12 +1648,50 @@ Whole reply under 600 tokens.`;
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
+        onClick: () => setPrintDoc({ kind: "chart", data: almanac[id] }),
+        style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.ember, border: `1px solid ${C.ember}66`, borderRadius: 999, cursor: "pointer" }
+      },
+      "\u21E9 PDF"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
         onClick: () => removeFromAlmanac(id),
         "aria-label": `Remove ${almanac[id].label}`,
         style: { fontFamily: FONT_BODY, fontSize: 14, padding: "7px 14px", background: "transparent", color: C.inkSoft, border: `1px solid ${C.ink}33`, borderRadius: 999, cursor: "pointer" }
       },
       "Remove"
-    ))))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 22, paddingTop: 14, borderTop: `1px solid ${C.ink}22`, fontSize: 12.5, color: C.inkSoft, lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 14, color: C.ember, marginBottom: 4 } }, "\u2726 Sources of the Almanac"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px" } }, "Placements are calculated (tropical zodiac, whole-sign houses); interpretations are cross-referenced from:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "0 0 8px", paddingLeft: 18 } }, STAR_SOURCES.map((src, i) => /* @__PURE__ */ React.createElement("li", { key: i }, src))), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic" } }, "Astrology and tarot are offered here as symbolic tradition and mirrors for reflection \u2014 not prediction, and never a substitute for medical, financial, or legal counsel. Birth times carry uncertainty; charts cast near sign cusps doubly so.")))), /* @__PURE__ */ React.createElement("footer", { style: { marginTop: 22, color: C.parchmentDim, fontSize: 13, lineHeight: 1.6 } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 15, color: C.gold, marginBottom: 6 } }, "\u2736 Sources & Gentle Disclaimer"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px" } }, "The lore in this grimoire is drawn and cross-referenced from these five-and-more reputable wells of pagan tradition, folklore, herbalism, and tarot:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "0 0 10px", paddingLeft: 20 } }, SOURCES.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i }, s))), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic" } }, "All correspondences are folkloric and spiritual in nature \u2014 offered for tradition and craft, not as medical advice. Never ingest or apply any herb without guidance from a qualified herbalist or physician, mind your flames, and keep smoke away from little lungs, feathered friends, and the expecting. Blessed be."))));
+    ))))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 22, paddingTop: 14, borderTop: `1px solid ${C.ink}22`, fontSize: 12.5, color: C.inkSoft, lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 14, color: C.ember, marginBottom: 4 } }, "\u2726 Sources of the Almanac"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px" } }, "Placements are calculated (tropical zodiac, whole-sign houses); interpretations are cross-referenced from:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "0 0 8px", paddingLeft: 18 } }, STAR_SOURCES.map((src, i) => /* @__PURE__ */ React.createElement("li", { key: i }, src))), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic" } }, "Astrology and tarot are offered here as symbolic tradition and mirrors for reflection \u2014 not prediction, and never a substitute for medical, financial, or legal counsel. Birth times carry uncertainty; charts cast near sign cusps doubly so."))), tab === "chest" && /* @__PURE__ */ React.createElement("div", { className: "page" }, /* @__PURE__ */ React.createElement("p", { style: { marginTop: 0, fontStyle: "italic", color: C.inkSoft } }, "Everything the book holds lives in this browser alone. Carry it out in a single scroll, and unroll it again wherever you like \u2014 another machine, another browser, or back into a fresh grimoire."), /* @__PURE__ */ React.createElement(Section, { title: "What the Book Holds" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(Tag, { label: "Pages", value: String(Object.keys(learned).length) }), /* @__PURE__ */ React.createElement(Tag, { label: "Weavings", value: String(Object.keys(ritualBook).length) }), /* @__PURE__ */ React.createElement(Tag, { label: "Charts", value: String(Object.keys(almanac).length) }))), /* @__PURE__ */ React.createElement(Section, { title: "Carry It Out" }, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", color: C.inkSoft, fontSize: 14 } }, "One scroll holding every learned page, every kept weaving, and every star chart. Keep it somewhere safe \u2014 it is the whole grimoire."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: backupAll,
+        style: { fontFamily: FONT_DISPLAY, fontSize: 16, padding: "10px 22px", background: C.ember, color: C.parchment, border: "none", borderRadius: 4, cursor: "pointer" }
+      },
+      "\u21E9 Back up the whole grimoire (JSON)"
+    )), /* @__PURE__ */ React.createElement(Section, { title: "Unroll a Scroll" }, /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", color: C.inkSoft, fontSize: 14 } }, "Choose a backup scroll and the book will carve it back into its individual pages, weavings, and charts.", /* @__PURE__ */ React.createElement("strong", null, " Add to the book"), " keeps what you already have and folds the new pages in; ", /* @__PURE__ */ React.createElement("strong", null, "replace the book"), " sets it aside and starts from the scroll alone."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("label", { style: { fontFamily: FONT_DISPLAY, fontSize: 15, padding: "9px 18px", background: C.sage, color: C.parchment, borderRadius: 4, cursor: "pointer" } }, "Add to the book", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "file",
+        accept: "application/json,.json",
+        style: { display: "none" },
+        onChange: (e) => {
+          const f = e.target.files && e.target.files[0];
+          if (f) restoreFrom(f, "merge");
+          e.target.value = "";
+        }
+      }
+    )), /* @__PURE__ */ React.createElement("label", { style: { fontFamily: FONT_BODY, fontSize: 14, padding: "9px 16px", background: "transparent", color: C.inkSoft, border: `1px solid ${C.ink}44`, borderRadius: 999, cursor: "pointer" } }, "\u2026or replace the book entirely", /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "file",
+        accept: "application/json,.json",
+        style: { display: "none" },
+        onChange: (e) => {
+          const f = e.target.files && e.target.files[0];
+          if (f) restoreFrom(f, "replace");
+          e.target.value = "";
+        }
+      }
+    ))), importError && /* @__PURE__ */ React.createElement("p", { style: { color: C.ember, marginTop: 12 } }, importError), importReport && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12, border: `1px solid ${C.sage}88`, borderRadius: 4, padding: "12px 14px", background: "#fff6" } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 17, color: C.ink, marginBottom: 4 } }, "The scroll is unrolled", importReport.mode === "replace" ? " \u2014 the book begins anew" : " \u2014 the pages are folded in", "."), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.inkSoft } }, importReport.entries, " page", importReport.entries === 1 ? "" : "s", " \xB7 ", importReport.rituals, " weaving", importReport.rituals === 1 ? "" : "s", " \xB7 ", importReport.charts, " chart", importReport.charts === 1 ? "" : "s", " carved out and set in place."), importReport.names.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.sage, marginTop: 6 } }, "Pages restored: ", importReport.names.join(", "), importReport.entries > importReport.names.length ? ", and more" : "", "."))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 20, paddingTop: 12, borderTop: `1px solid ${C.ink}22`, fontSize: 12.5, color: C.inkSoft, lineHeight: 1.55 } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0 } }, /* @__PURE__ */ React.createElement("strong", null, "On the printed page:"), " the \u21E9 PDF buttons throughout the grimoire open your browser's print dialog \u2014 choose ", /* @__PURE__ */ React.createElement("em", null, "Save as PDF"), " as the destination to keep a clean, legible copy of any single page, weaving, or chart."), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0" } }, /* @__PURE__ */ React.createElement("strong", null, "A gentle warning:"), " the book lives in this browser's own storage. Clearing site data, or browsing privately, will empty it. Carry a scroll out now and then.")))), /* @__PURE__ */ React.createElement("footer", { style: { marginTop: 22, color: C.parchmentDim, fontSize: 13, lineHeight: 1.6 } }, /* @__PURE__ */ React.createElement("div", { style: { fontFamily: FONT_DISPLAY, fontSize: 15, color: C.gold, marginBottom: 6 } }, "\u2736 Sources & Gentle Disclaimer"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px" } }, "The lore in this grimoire is drawn and cross-referenced from these five-and-more reputable wells of pagan tradition, folklore, herbalism, and tarot:"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "0 0 10px", paddingLeft: 20 } }, SOURCES.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i }, s))), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontStyle: "italic" } }, "All correspondences are folkloric and spiritual in nature \u2014 offered for tradition and craft, not as medical advice. Never ingest or apply any herb without guidance from a qualified herbalist or physician, mind your flames, and keep smoke away from little lungs, feathered friends, and the expecting. Blessed be.")))));
   }
   window.RowansGrimoire = RowansGrimoire;
 })();
