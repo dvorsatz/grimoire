@@ -21,15 +21,6 @@ A cottage-witch grimoire that runs entirely in the browser — no server, no bui
 
 > **Worth knowing:** the grimoire lives in your browser's own storage. Clearing site data, or using private browsing, will empty it. Carry a scroll out of the Chest now and then.
 
-## Use it on GitHub Pages
-
-1. Create a new repository and upload **`index.html`** and **`.nojekyll`** to the root (drag them into *Add file → Upload files*, or commit them).
-2. In the repo, go to **Settings → Pages**.
-3. Under *Build and deployment*, set **Source: Deploy from a branch**, pick your branch (usually `main`) and folder **`/ (root)`**, then **Save**.
-4. Wait a minute, then open `https://<your-username>.github.io/<your-repo>/`. The grimoire will appear.
-
-That's it — the page is static and self-contained. React loads from a public CDN (with an automatic fallback), and everything you save (learned pages, star charts) is stored in your own browser.
-
 ## Lighting the hearth (getting your own API key)
 
 Browsing works with no setup. The features that *generate* text — Study research, ritual weaving, and the written parts of a star chart — call Anthropic's API. Each person supplies their **own** key, so their own (very small) usage is billed to their own account. Here is how to get one from scratch.
